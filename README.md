@@ -8,3 +8,12 @@ User POSTs JSON with text:
 ✅ Response:
 
 { "prediction": "positive" }
+
+
+---------
+test
+
+----
+curl -X POST http://localhost:5000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"text": "I love this tool!"}'
