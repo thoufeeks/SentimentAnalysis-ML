@@ -1,0 +1,45 @@
+pipeline {
+  agent any
+  environment {
+    IMAGE = "yourdockerhubuser/sentiment-api:${BUILD_NUMBER}"
+  }
+
+  stages {
+    stage('Clone Repo') {
+      steps {
+        git 'https://github.com/your-org/mlops-sentiment.git'
+      }
+    }
+
+    stage('Train Model') {
+      steps {
+        sh 'python3 app/train.py'
+      }
+    }
+
+    stage('Build Image') {
+      steps {
+        sh 'docker build -t $IMAGE .'
+      }
+    }
+
+    stage('Push Image') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+          sh 'echo $PASS | docker login -u $USER --password-stdin'
+          sh 'docker push $IMAGE'
+        }
+      }
+    }
+
+    stage('Deploy to EKS') {
+      steps {
+        sh '''
+        sed -i "s|<your-dockerhub-username>/sentiment-api:latest|$IMAGE|g" k8s/deployment.yaml
+        kubectl apply -f k8s/deployment.yaml
+        kubectl apply -f k8s/service.yaml
+        '''
+      }
+    }
+  }
+}
