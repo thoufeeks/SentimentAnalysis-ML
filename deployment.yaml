@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sentiment-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sentiment
+  template:
+    metadata:
+      labels:
+        app: sentiment
+    spec:
+      containers:
+      - name: sentiment
+        image: <your-dockerhub-username>/sentiment-api:latest
+        ports:
+        - containerPort: 5000
